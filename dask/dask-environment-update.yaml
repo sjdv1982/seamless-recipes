@@ -2,13 +2,17 @@ channels:
   - rpbs
   - conda-forge
 dependencies:
-  - dask
-  - dask-jobqueue 
   - cloudpickle=3
   - gcc
   - gxx
   - gfortran
   - pip
   - pip:
+    - dask[distributed]
+    - dask-jobqueue 
+    - lz4
     - jsonschema==4.18
     - requests==2.31
+variables:
+  SEAMLESS_READ_BUFFER_SERVERS: 
+  SEAMLESS_WRITE_BUFFER_SERVER: 
