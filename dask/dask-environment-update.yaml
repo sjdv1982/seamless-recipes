@@ -1,0 +1,14 @@
+channels:
+  - rpbs
+  - conda-forge
+dependencies:
+  - dask
+  - dask-jobqueue 
+  - cloudpickle=3
+  - gcc
+  - gxx
+  - gfortran
+  - pip
+  - pip:
+    - jsonschema==4.18
+    - requests==2.31

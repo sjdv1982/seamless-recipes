@@ -1,0 +1,11 @@
+name: run-db-hashserver
+channels:
+  - rpbs
+  - conda-forge
+dependencies:
+  - seamless-cli  
+  - fastapi
+  - uvicorn 
+  - uvicorn-standard
+  - aiohttp
+  - peewee
