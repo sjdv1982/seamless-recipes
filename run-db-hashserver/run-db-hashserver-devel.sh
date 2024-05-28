@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run a database and hashserver inside a Dask+Seamless conda environment
+# Run a database and hashserver inside a Seamless development conda environment with extra packages
 #
 # This script contains Slurm directives, but can also be launched independently
 #
@@ -14,7 +14,9 @@
 # The conda environment names are in HASHSERVER_CONDA_ENVIRONMENT and DATABASE_CONDA_ENVIRONMENT
 # If these variables do not exist, their names are "hashserver" and "seamless-database".
 # Make sure that these environments exist!
-# See hashserver/environment.yml and tools/database.Dockerfile for the required packages 
+# To see the required packages:
+# - See $SEAMLESS_TOOLS_DIR/seamless-cli/hashserver/environment.yml for hashserver
+# - See $SEAMLESS_TOOLS_DIR/seamless-cli/database/database.Dockerfile for seamless-database
 #
 # It also requires a port range to be available on the node 
 # towards the exterior, e.g 60001-61000
