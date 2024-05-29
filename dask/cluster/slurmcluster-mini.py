@@ -59,6 +59,9 @@ if conda_shlvl == 1:
 else:
     CONDA_PREFIX = os.environ["CONDA_PREFIX_1"]
 
+if "TMPDIR" not in os.environ:
+    os.environ["TMPDIR"] = tempfile.gettempdir()
+
 exported_vars = [
     "TMPDIR",
     "SEAMLESS_DASK_CONDA_ENVIRONMENT",
@@ -67,10 +70,9 @@ exported_vars = [
     "SEAMLESS_READ_BUFFER_SERVERS",
     "SEAMLESS_WRITE_BUFFER_SERVER"
 ]
+exported_var_data = []
 for var in exported_vars:
-    print("{}={}".format(var, os.environ[var]))
-print()
-
+    exported_var_data.append("export {}={}".format(var, os.environ[var]))
 
 ncores=10
 
@@ -95,7 +97,10 @@ cluster = SLURMCluster(
         "set -u -e",
         "source {}/etc/profile.d/conda.sh".format(CONDA_PREFIX),        
         "conda info --envs",    
-        "conda activate $SEAMLESS_DASK_CONDA_ENVIRONMENT",
+        "conda activate $SEAMLESS_DASK_CONDA_ENVIRONMENT"
+    ]
+    + exported_var_data +
+    [
         "export DASK_DISTRIBUTED__WORKER__MULTIPROCESSING_METHOD=fork",
         "export DASK_DISTRIBUTED__WORKER__DAEMON=False",
     ],
