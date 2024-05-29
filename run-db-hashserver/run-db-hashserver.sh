@@ -43,6 +43,10 @@
 # If possible, run indefinitely
 #SBATCH --time=0
 
+if [ -z "$SSH_HOSTNAME" ]; then
+  export SSH_HOSTNAME=$HOSTNAME
+fi
+
 set -u -e
 
 
@@ -141,9 +145,9 @@ echo ' #########################################################################
 echo >> $ENVIRONMENT_OUTPUT_FILE 
 echo ' # For seamless-delegate-ssh:' >> $ENVIRONMENT_OUTPUT_FILE 
 echo ' #########################################################################' >> $ENVIRONMENT_OUTPUT_FILE 
-echo ' export SEAMLESS_SSH_HASHSERVER_HOST='$HOSTNAME >> $ENVIRONMENT_OUTPUT_FILE 
+echo ' export SEAMLESS_SSH_HASHSERVER_HOST='$SSH_HOSTNAME >> $ENVIRONMENT_OUTPUT_FILE 
 echo ' export SEAMLESS_SSH_HASHSERVER_PORT='$SEAMLESS_HASHSERVER_PORT >> $ENVIRONMENT_OUTPUT_FILE 
-echo ' export SEAMLESS_SSH_DATABASE_HOST='$HOSTNAME >> $ENVIRONMENT_OUTPUT_FILE 
+echo ' export SEAMLESS_SSH_DATABASE_HOST='$SSH_HOSTNAME >> $ENVIRONMENT_OUTPUT_FILE 
 echo ' export SEAMLESS_SSH_DATABASE_PORT='$SEAMLESS_DATABASE_PORT >> $ENVIRONMENT_OUTPUT_FILE 
 echo ' #########################################################################' >> $ENVIRONMENT_OUTPUT_FILE 
 echo '' >> $ENVIRONMENT_OUTPUT_FILE 
