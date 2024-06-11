@@ -8,6 +8,7 @@ dependencies:
   - gfortran
   - pip
   - pip:
+    - distributed==2024.5.1
     - dask[distributed]
     - dask-jobqueue 
     - lz4
