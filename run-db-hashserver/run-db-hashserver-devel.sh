@@ -77,11 +77,15 @@ else:
 print(CONDA_DIR)
 ')
 
+CONDA_EXE_ORIG=$CONDA_EXE
+
 source $CONDA_DIR/etc/profile.d/conda.sh
 
 for i in $(seq ${CONDA_SHLVL}); do
     conda deactivate
 done
+export CONDA_EXE=$CONDA_EXE_ORIG
+
 conda activate
 
 source $CONDA_DIR/etc/profile.d/conda.sh
@@ -128,9 +132,11 @@ print(random.randint(start, end))
 export SEAMLESS_DATABASE_PORT=$(random_port)
 export SEAMLESS_HASHSERVER_PORT=$(random_port)
 
-for i in $(seq ${CONDA_SHLVL}); do
+for i in $(seq 10); do
     conda deactivate
 done
+export CONDA_EXE=$CONDA_EXE_ORIG
+conda activate
 
 set -u -e
 
