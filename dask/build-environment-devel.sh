@@ -1,6 +1,8 @@
+# Syntax: build-environment-devel.sh <name of environment>
 # Builds a python 3.10 environment containing: 
+# - The source dirs of seamless, seamless-tools and silk
 # - Dask
-# - Seamless minimal (for now, the development version)
+# - Seamless minimal (the development version)
 # - The required packages for hashserver and the Seamless database
 #   (the latter is only strictly necessary if they are being launched 
 #    locally, using setup.sh; not if they have been already deployed elsewhere)
@@ -71,11 +73,11 @@ mamba env update --file $SEAMLESSDIR/seamless-minimal-dependencies.yaml
 mamba install -c conda-forge gcc gxx gfortran cython scipy wurlitzer -y
 mamba env update --file $SEAMLESS_TOOLS_DIR/seamless-development-update.yaml  # also sets SEAMLESS_XXX vars
 mamba install -c conda-forge dask peewee fastapi uvicorn dask-jobqueue cloudpickle=3 -y
-pip install jsonschema==4.18.* requests==2.31.*
 pip install docker
 conda env config vars set \
   SEAMLESSDIR=$SEAMLESSDIR \
   SEAMLESS_TOOLS_DIR=$SEAMLESS_TOOLS_DIR \
+  SEAMLESS_SCRIPTS_DIR=$SEAMLESS_TOOLS_DIR/scripts \
   SILKDIR=$SILKDIR \
   HASHSERVERDIR=$SEAMLESS_TOOLS_DIR/seamless-cli/hashserver \
   PATH=${SEAMLESS_TOOLS_DIR}/seamless-cli:$SEAMLESSDIR/bin:${PATH} \
