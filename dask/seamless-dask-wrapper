@@ -19,7 +19,8 @@
 #
 # - It also requires a port range to be available 
 #   towards the exterior, e.g 60001-61000. This port range must be defined as 
-#   the variables RANDOM_PORT_START and RANDOM_PORT_END
+#   the variables RANDOM_PORT_START and RANDOM_PORT_END.
+#   Alternatively, you can define a static port using DASK_SCHEDULER_PORT
 #
 # Once this script has started, it will rewrite $ENVIRONMENT_OUTPUT_FILE, 
 #  adding variables for the Seamless assistant and the Dask scheduler.
@@ -100,7 +101,13 @@ print(random.randint(start, end))
 
 ip=$(hostname -I | awk '{print $1}')
 
-export DASK_SCHEDULER_PORT=$(random_port)
+
+set +u
+if [ -z "$DASK_SCHEDULER_PORT" ]; then
+  set -u
+  export DASK_SCHEDULER_PORT=$(random_port)
+fi
+set -u
 
 cat /dev/null > $ENVIRONMENT_OUTPUT_FILE 
 echo ' # This file has been auto-generated and modified by seamless-dask-wrapper' >> $ENVIRONMENT_OUTPUT_FILE 

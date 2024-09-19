@@ -5,6 +5,7 @@
 #
 # It also requires a port range to be available on the node 
 #  towards the exterior, e.g 60001-61000
+# Alternatively, you can pre-define a static port using DASK_SCHEDULER_PORT
 #
 # Syntax: ./one-node.sh 60001 61000
 #
@@ -41,7 +42,14 @@ ip=$(hostname -I | awk '{print $1}')
 host="${3:-$ip}"
 
 export SEAMLESS_DATABASE_IP=localhost
-export DASK_SCHEDULER_PORT=$(random_port)
+
+set +u
+if [ -z "$DASK_SCHEDULER_PORT" ]; then
+  set -u
+  export DASK_SCHEDULER_PORT=$(random_port)
+fi
+set -u
+
 export SEAMLESS_READ_BUFFER_SERVERS=http://localhost:$SEAMLESS_HASHSERVER_PORT
 export SEAMLESS_WRITE_BUFFER_SERVER=http://localhost:$SEAMLESS_HASHSERVER_PORT
 
