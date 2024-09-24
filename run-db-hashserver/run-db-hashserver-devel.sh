@@ -157,7 +157,9 @@ conda deactivate
 conda activate $HASHSERVER_CONDA_ENVIRONMENT
 SEAMLESS_TOOLS_DIR=$SEAMLESS_TOOLS_DIR_OLD
 cd $SEAMLESS_TOOLS_DIR/seamless-cli/hashserver
-python3 -u hashserver.py $HASHSERVER_BUFFER_DIR --writable --port $SEAMLESS_HASHSERVER_PORT --host $host \
+python3 -u hashserver.py $HASHSERVER_BUFFER_DIR --writable \
+  --port $SEAMLESS_HASHSERVER_PORT --host $host \
+  --layout $HASHSERVER_BUFFER_DIR_LAYOUT \
   >& $HASHSERVER_BUFFER_DIR/run-hashserver.log &
 pid_hs=$!
 conda deactivate

@@ -121,7 +121,9 @@ python -c 'import fastapi, uvicorn'
 # Check that the correct database packages are there:
 python -c 'import peewee, aiohttp'
 
-python3 -u $CONDA_PREFIX/share/seamless-cli/hashserver/hashserver.py $HASHSERVER_BUFFER_DIR --writable --port $SEAMLESS_HASHSERVER_PORT --host $host \
+python3 -u $CONDA_PREFIX/share/seamless-cli/hashserver/hashserver.py $HASHSERVER_BUFFER_DIR --writable \
+  --port $SEAMLESS_HASHSERVER_PORT --host $host \
+  --layout $HASHSERVER_BUFFER_DIR_LAYOUT \
   >& $HASHSERVER_BUFFER_DIR/run-hashserver.log &
 pid_hs=$!
 
