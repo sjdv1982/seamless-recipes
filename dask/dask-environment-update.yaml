@@ -8,12 +8,12 @@ dependencies:
   - gfortran
   - pip
   - pip:
-    - distributed==2024.5.2
-    - dask[distributed]
-    - dask-jobqueue 
-    - lz4
-    - jsonschema==4.18
-    - requests==2.31
+      - distributed==2024.9.0
+      - dask[distributed]
+      - dask-jobqueue
+      - lz4
+      - jsonschema==4.18
+      - requests==2.31
 variables:
-  SEAMLESS_READ_BUFFER_SERVERS: 
-  SEAMLESS_WRITE_BUFFER_SERVER: 
+  SEAMLESS_READ_BUFFER_SERVERS:
+  SEAMLESS_WRITE_BUFFER_SERVER:
