@@ -75,9 +75,11 @@ exported_var_data = []
 for var in exported_vars:
     exported_var_data.append("export {}={}".format(var, os.environ[var]))
 
-ncores=4
+ncores=8
+
 
 dask.config.set({"distributed.worker.resources.ncores": ncores})
+dask.config.set({"distributed.scheduler.unknown-task-duration": "1m"})
 cluster = OARCluster(
     queue='default',
     walltime="01:00:00",
@@ -87,7 +89,7 @@ cluster = OARCluster(
     
     # The scheduler will send this many tasks to each job
     cores=ncores,
-    memory="16 GB",
+    memory="32 GB",
     python="python",
 
     memory_per_core_property_name='memcore',

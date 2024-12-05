@@ -75,9 +75,11 @@ for var in exported_vars:
     exported_var_data.append("export {}={}".format(var, os.environ[var]))
 
 
-ncores=10
+ncores=8
 
 dask.config.set({"distributed.worker.resources.ncores": ncores})
+dask.config.set({"distributed.scheduler.unknown-task-duration": "1m"})
+
 cluster = OARCluster(
     queue='default',
     walltime="01:00:00",
