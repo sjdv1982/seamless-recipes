@@ -72,9 +72,10 @@ for var in exported_vars:
     exported_var_data.append("export {}={}".format(var, os.environ[var]))
 
 
-ncores=4
+ncores=8
 
 dask.config.set({"distributed.worker.resources.ncores": ncores})
+dask.config.set({"distributed.scheduler.unknown-task-duration": "1m"})
 cluster = SLURMCluster(
     #queue='regular',
     walltime="01:00:00",
@@ -84,8 +85,10 @@ cluster = SLURMCluster(
     
     # The scheduler will send this many tasks to each job
     cores=ncores,
-    memory="16 GB",
+    memory="32 GB",
     python="python",
+
+    job_cpu=ncores+1,
 
     job_script_prologue=[
         "set -u -e",
