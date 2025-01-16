@@ -30,6 +30,7 @@ import dask
 import sys
 import os
 import argparse
+from urllib.parse import urlparse
 
 # Check that delegation works
 os.environ["SEAMLESS_DATABASE_IP"]
@@ -65,6 +66,8 @@ cluster = LocalCluster(
     resources = {"ncores": ncores},
 )
 
+if args.port > 0:
+  assert args.port == urlparse(cluster.scheduler_address).port, cluster.scheduler_address
 print("Dask scheduler address:")
 print(cluster.scheduler_address)
 sys.stdout.flush()
