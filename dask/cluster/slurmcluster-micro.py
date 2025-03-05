@@ -2,7 +2,6 @@
 Launches a Dask scheduler to be used with Seamless by setting up a SlurmCluster.
 For use with the dask-micro-assistant.
 
-It is recommended to use this with seamless-dask-wrapper
 
 See local.py for more details about starting Dask in a Seamless-compatible manner.
 
@@ -42,14 +41,16 @@ parser.add_argument("--port", default=0, type=int, required=False)
 args = parser.parse_args()
 
 import logging
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+
+logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 
 import tempfile
+
 print("Temp dir", tempfile.gettempdir())
 
 from dask_jobqueue import SLURMCluster
 
-scheduler_kwargs={"host":args.host}
+scheduler_kwargs = {"host": args.host}
 if args.port > 0:
     scheduler_kwargs["port"] = args.port
 
@@ -65,57 +66,52 @@ exported_vars = [
     "SEAMLESS_DATABASE_IP",
     "SEAMLESS_DATABASE_PORT",
     "SEAMLESS_READ_BUFFER_SERVERS",
-    "SEAMLESS_WRITE_BUFFER_SERVER"
+    "SEAMLESS_WRITE_BUFFER_SERVER",
 ]
 exported_var_data = []
 for var in exported_vars:
     exported_var_data.append("export {}={}".format(var, os.environ[var]))
 
 
-ncores=8
+ncores = 8
 
 dask.config.set({"distributed.worker.resources.ncores": ncores})
 dask.config.set({"distributed.scheduler.unknown-task-duration": "1m"})
 cluster = SLURMCluster(
-    #queue='regular',
+    # queue='regular',
     walltime="01:00:00",
-
     # processes should be 1, otherwise you get trouble
-    processes=1, 
-    
+    processes=1,
     # The scheduler will send this many tasks to each job
     cores=ncores,
     memory="32 GB",
     python="python",
-
-    job_cpu=ncores+1,
-
+    job_cpu=ncores + 1,
     job_script_prologue=[
         "set -u -e",
-        "source {}/etc/profile.d/conda.sh".format(CONDA_PREFIX),        
-        "conda info --envs",    
-        "conda activate {}".format(os.environ["SEAMLESS_DASK_CONDA_ENVIRONMENT"])
-    ] 
-    + exported_var_data +
-    [
+        "source {}/etc/profile.d/conda.sh".format(CONDA_PREFIX),
+        "conda info --envs",
+        "conda activate {}".format(os.environ["SEAMLESS_DASK_CONDA_ENVIRONMENT"]),
+    ]
+    + exported_var_data
+    + [
         "export DASK_DISTRIBUTED__WORKER__MULTIPROCESSING_METHOD=fork",
         "export DASK_DISTRIBUTED__WORKER__DAEMON=False",
     ],
-
     worker_extra_args=[
         "--worker-port={}:{}".format(
-            os.environ["RANDOM_PORT_START"],
-            os.environ["RANDOM_PORT_END"]
+            os.environ["RANDOM_PORT_START"], os.environ["RANDOM_PORT_END"]
         ),
         "--nanny-port={}:{}".format(
-            os.environ["RANDOM_PORT_START"],
-            os.environ["RANDOM_PORT_END"]
+            os.environ["RANDOM_PORT_START"], os.environ["RANDOM_PORT_END"]
         ),
-        f"--resources \"ncores={ncores}\"",
-        "--lifetime", "55m", 
-        "--lifetime-stagger", "4m",
+        f'--resources "ncores={ncores}"',
+        "--lifetime",
+        "55m",
+        "--lifetime-stagger",
+        "4m",
     ],
-    scheduler_options=scheduler_kwargs
+    scheduler_options=scheduler_kwargs,
 )
 
 cluster.adapt(minimum_jobs=0, maximum_jobs=50)
@@ -126,18 +122,22 @@ print("Dask scheduler address:")
 print(cluster.scheduler_address)
 sys.stdout.flush()
 
+
 def is_interactive():
     if sys.flags.interactive:
         return True
     try:
         from IPython import get_ipython
-        return (get_ipython() is not None)
+
+        return get_ipython() is not None
     except ImportError:
         return False
 
+
 if not is_interactive():
-    print("Press Ctrl+C to stop")    
+    print("Press Ctrl+C to stop")
     import time
+
     while 1:
         time.sleep(10)
         sys.stdout.flush()

@@ -1,24 +1,18 @@
 #!/bin/bash
-# Run a database and hashserver inside a Seamless development conda environment with extra packages
 #
-# This script contains Slurm directives, but can also be launched independently
+# ***This script contains Slurm directives, but can also be launched independently***
+#
+# Run a database and hashserver inside a conda environment
+# The conda environment can be built from run-db-hashserver-environment.yaml,
+#  (using conda env create --file run-db-hashserver-environment.yaml)
+#  and must be defined as CONDA_RUN_DB_HASHSERVER_ENVIRONMENT
 #
 # This script is meant to be launched before seamless-dask-dynamic-wrapper,
 #  potentially on a different machine or as/inside a different Slurm job.
 # (For a script that is to be sourced *inside* a full deployment script, 
 #  see setup-db-hashserver*.sh instead).
 #
-# Note: this is a DEVELOPMENT version, requiring SEAMLESS_TOOLS_DIR to be defined
-#
-# It requires conda environments for the hashserver and the database to have been setup.
-# The conda environment names are in HASHSERVER_CONDA_ENVIRONMENT and DATABASE_CONDA_ENVIRONMENT
-# If these variables do not exist, their names are "hashserver" and "seamless-database".
-# Make sure that these environments exist!
-# To see the required packages:
-# - See $SEAMLESS_TOOLS_DIR/seamless-cli/hashserver/environment.yml for hashserver
-# - See $SEAMLESS_TOOLS_DIR/seamless-cli/database/database.Dockerfile for seamless-database
-#
-# It also requires a port range to be available on the node 
+# It requires a port range to be available on the node 
 # towards the exterior, e.g 60001-61000
 # This port range must be defined as the variables 
 # RANDOM_PORT_START and RANDOM_PORT_END
@@ -27,7 +21,7 @@
 # Hashserver buffers are stored in HASHSERVER_BUFFER_DIR (can be enormous!)
 #
 #
-# Syntax: ./run-db-hashserver.sh
+# Syntax: ./run-db-hashserver-dynamic.sh
 # Once it has started, it will generate a file $ENVIRONMENT_OUTPUT_FILE
 #  (by default, ~/.seamless/seamless-env.sh)
 # containing the network configuration of the Seamless hashserver and database.
@@ -49,13 +43,15 @@
 # If possible, run indefinitely
 #SBATCH --time=0
 
+if [ -z "$SSH_HOSTNAME" ]; then
+  export SSH_HOSTNAME=$HOSTNAME
+fi
+
 set -u -e
 
 
 x=$RANDOM_PORT_START
 x=$RANDOM_PORT_END
-SEAMLESS_TOOLS_DIR_OLD=$SEAMLESS_TOOLS_DIR
-
 host=0.0.0.0
 
 set +u -e
@@ -77,34 +73,18 @@ else:
 print(CONDA_DIR)
 ')
 
-CONDA_EXE_ORIG=$CONDA_EXE
-
 source $CONDA_DIR/etc/profile.d/conda.sh
 
 for i in $(seq ${CONDA_SHLVL}); do
     conda deactivate
 done
-export CONDA_EXE=$CONDA_EXE_ORIG
-
-conda activate
-
-source $CONDA_DIR/etc/profile.d/conda.sh
-
-if [ -z "$HASHSERVER_CONDA_ENVIRONMENT" ]; then
-    HASHSERVER_CONDA_ENVIRONMENT='hashserver'
-    echo "HASHSERVER_CONDA_ENVIRONMENT not defined. Using default: hashserver" > /dev/stderr
-fi
+conda activate $CONDA_RUN_DB_HASHSERVER_ENVIRONMENT
 
 if [ -z "$HASHSERVER_BUFFER_DIR" ]; then
     HASHSERVER_BUFFER_DIR=$HOME/.seamless/buffers
     echo "HASHSERVER_BUFFER_DIR not defined. Using default: " $HASHSERVER_BUFFER_DIR > /dev/stderr
 fi
 mkdir -p $HASHSERVER_BUFFER_DIR
-
-if [ -z "$DATABASE_CONDA_ENVIRONMENT" ]; then
-    DATABASE_CONDA_ENVIRONMENT='seamless-database'
-    echo "DATABASE_CONDA_ENVIRONMENT not defined. Using default: seamless-database" > /dev/stderr
-fi
 
 if [ -z "$DATABASE_DIR" ]; then
     DATABASE_DIR=$HOME/.seamless/database
@@ -132,54 +112,32 @@ print(random.randint(start, end))
 export SEAMLESS_DATABASE_PORT=$(random_port)
 export SEAMLESS_HASHSERVER_PORT=$(random_port)
 
-for i in $(seq 10); do
-    conda deactivate
-done
-export CONDA_EXE=$CONDA_EXE_ORIG
-conda activate
-
 set -u -e
 
-conda activate $HASHSERVER_CONDA_ENVIRONMENT
-
-# Check that the correct packages are there:
+# Check that the correct hashserver packages are there:
 python -c 'import fastapi, uvicorn'
 
-conda deactivate
 
-conda activate $DATABASE_CONDA_ENVIRONMENT
-
-# Check that the correct packages are there:
+# Check that the correct database packages are there:
 python -c 'import peewee, aiohttp'
 
-conda deactivate
-
-conda activate $HASHSERVER_CONDA_ENVIRONMENT
-SEAMLESS_TOOLS_DIR=$SEAMLESS_TOOLS_DIR_OLD
-cd $SEAMLESS_TOOLS_DIR/seamless-cli/hashserver
-python3 -u hashserver.py $HASHSERVER_BUFFER_DIR --writable \
+python3 -u $CONDA_PREFIX/share/seamless-cli/hashserver/hashserver.py $HASHSERVER_BUFFER_DIR --writable \
   --port $SEAMLESS_HASHSERVER_PORT --host $host \
   --layout $HASHSERVER_BUFFER_DIR_LAYOUT \
   >& $HASHSERVER_BUFFER_DIR/run-hashserver.log &
 pid_hs=$!
-conda deactivate
 
 
-conda activate $DATABASE_CONDA_ENVIRONMENT
-SEAMLESS_TOOLS_DIR=$SEAMLESS_TOOLS_DIR_OLD
-cd $SEAMLESS_TOOLS_DIR/tools
-python3 -u database.py $DATABASE_DIR/seamless.db --port $SEAMLESS_DATABASE_PORT --host $host \
+python3 -u $CONDA_PREFIX/share/seamless-cli/database/database.py $DATABASE_DIR/seamless.db --port $SEAMLESS_DATABASE_PORT --host $host \
   >& $DATABASE_DIR/run-db.log &
 pid_db=$!
-conda deactivate
-
 
 ip=$(hostname -I | awk '{print $1}')
 
 cat /dev/null > $ENVIRONMENT_OUTPUT_FILE 
-echo ' # This file has been auto-generated by run-db-hashserver-devel.sh' >> $ENVIRONMENT_OUTPUT_FILE 
+echo ' # This file has been auto-generated by run-db-hashserver-dynamic.sh' >> $ENVIRONMENT_OUTPUT_FILE 
 echo '' >> $ENVIRONMENT_OUTPUT_FILE 
-echo ' # For direct connection:' >> $ENVIRONMENT_OUTPUT_FILE 
+echo ' # For direct connection (seamless-delegate-remote):' >> $ENVIRONMENT_OUTPUT_FILE 
 echo ' #########################################################################' >> $ENVIRONMENT_OUTPUT_FILE 
 echo ' export SEAMLESS_DATABASE_IP='$ip >> $ENVIRONMENT_OUTPUT_FILE 
 echo ' export SEAMLESS_DATABASE_PORT='$SEAMLESS_DATABASE_PORT >> $ENVIRONMENT_OUTPUT_FILE 
@@ -189,9 +147,9 @@ echo ' #########################################################################
 echo >> $ENVIRONMENT_OUTPUT_FILE 
 echo ' # For seamless-delegate-ssh:' >> $ENVIRONMENT_OUTPUT_FILE 
 echo ' #########################################################################' >> $ENVIRONMENT_OUTPUT_FILE 
-echo ' export SEAMLESS_SSH_HASHSERVER_HOST='$HOSTNAME >> $ENVIRONMENT_OUTPUT_FILE 
+echo ' export SEAMLESS_SSH_HASHSERVER_HOST='$SSH_HOSTNAME >> $ENVIRONMENT_OUTPUT_FILE 
 echo ' export SEAMLESS_SSH_HASHSERVER_PORT='$SEAMLESS_HASHSERVER_PORT >> $ENVIRONMENT_OUTPUT_FILE 
-echo ' export SEAMLESS_SSH_DATABASE_HOST='$HOSTNAME >> $ENVIRONMENT_OUTPUT_FILE 
+echo ' export SEAMLESS_SSH_DATABASE_HOST='$SSH_HOSTNAME >> $ENVIRONMENT_OUTPUT_FILE 
 echo ' export SEAMLESS_SSH_DATABASE_PORT='$SEAMLESS_DATABASE_PORT >> $ENVIRONMENT_OUTPUT_FILE 
 echo ' #########################################################################' >> $ENVIRONMENT_OUTPUT_FILE 
 echo '' >> $ENVIRONMENT_OUTPUT_FILE 

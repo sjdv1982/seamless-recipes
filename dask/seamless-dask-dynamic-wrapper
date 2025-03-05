@@ -8,7 +8,7 @@
 # Requirements:
 #
 # - This script requires the Seamless hashserver and database to have been previously launched 
-#   by a script like run-db-hashserver.sh, which stores its configuration in a file.
+#   by a script like run-db-hashserver-dynamic.sh, which stores its configuration in a file.
 #   The configuration must have been stored as environment variables in ENVIRONMENT_OUTPUT_FILE.
 #    (the default value of ENVIRONMENT_OUTPUT_FILE is ~/.seamless/seamless-env.sh, the 
 #       same as run-db-hashserver uses).

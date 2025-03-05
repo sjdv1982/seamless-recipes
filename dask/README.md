@@ -41,6 +41,7 @@ You must define a port range, and all ports within that range must be accessible
 - Instead of `local.sh`, you can also use a script that dynamically launches jobs on an HPC cluster. There is currently `wrap-slurmcluster-micro.sh`, `wrap-slurmcluster-mini.sh`, `wrap-slurmcluster-minifront.sh`, wrapping `slurmcluster-micro.py`,  `slurmcluster-mini.py`
 and `slurmcluster-minifront.py` (there is also `slurmcluster-minifront-singularity.py`).
 - Finally, paste the variable section into the shell where you will be using Seamless.
+(TODO: describe static configuration where you pre-choose the ports)
 
 ## Remote method with SSH tunneling
 
@@ -83,19 +84,18 @@ Now comes the project-specific part:
 
 - You might want to clone and redefine `ENVIRONMENT_OUTPUT_FILE`, because the next Slurm command will modify the file.
 
-
-- Submit `seamless-dask-wrapper <wrap-script>` under `sbatch`. This will launch a Dask scheduler and workers inside the Seamless+Dask environment. For now, there are
-two wrap scripts: `wrap-local.sh` for deployment of workers on a single node (like the first three methods) and `wrap-slurmcluster-XXX.sh`. The latter uses SLURMCluster from the dask-jobqueue project in order to launch new Dask workers dynamically using Slurm. 
-`wrap-slurmcluster-XXX.sh` comes in three versions: 
-  - `wrap-slurmcluster-micro.sh` which launches `slurmcluster-micro.py` for use with the dask-micro-assistant. 
+- Submit `seamless-dask-dynamic-wrapper <wrap-script>` under `sbatch`. This will launch a Dask scheduler and workers inside the Seamless+Dask environment. For now, there are
+two wrap scripts: `wrap-local.sh` for deployment of workers on a single node (like the first three methods) and `wrap-slurmcluster-XXX.sh`. The latter uses SLURMCluster from the dask-jobqueue project in order to launch new Dask workers dynamically using Slurm.
+`wrap-slurmcluster-XXX.sh` comes in three versions:
+  - `wrap-slurmcluster-micro.sh` which launches `slurmcluster-micro.py` for use with the dask-micro-assistant.
   -`wrap-slurmcluster-mini.sh` which launches `slurmcluster-mini.py` for use with the dask-mini-assistant.
   - `wrap-slurmcluster-minifront.sh`which launches `slurmcluster-minifront.py` for use with the dask-minifront-assistant. The minifront script launches a mini assistant in a parallel process and forwards all job requests to it, allowing a separation of the Dask process and the Seamless assistant process.
   (For the truly paranoid, there is also `slurmcluster-minifront-singularity.py`, which wraps the mini assistant in a minimal (non-isolated) Singularity image. This in fact removes the mini assistant PID from direct Slurm control.)
 If you use `wrap-slurmcluster-XXX.sh`, you may want to copy and modify `slurmcluster-XXX.py` to control Dask resources (number of jobs, memory, etc.)
 
-Example: `sbatch --time 72:00:00 ~/seamless-tools/dask-deployment/seamless-dask-wrapper ~/seamless-tools/dask-deployment/wrap-slurmcluster-mini.sh`
+Example: `sbatch --time 72:00:00 ~/seamless-tools/dask-deployment/seamless-dask-dynamic-wrapper ~/seamless-tools/dask-deployment/wrap-slurmcluster-mini.sh`
 
-You can also launch `seamless-dask-wrapper <wrap-script>` on a cluster front-end.
+You can also launch `seamless-dask-dynamic-wrapper <wrap-script>` on a cluster front-end.
 In that case, an interactive Python session (not IPython, unfortunately; IPython gives trouble with asyncio) is opened, where you can manipulate the `cluster` object.
 
 - Copy the contents of `$ENVIRONMENT_OUTPUT_FILE`.

@@ -1,5 +1,5 @@
 #!/bin/bash
-# a wrapper around oarcluster-mini.py to be used with seamless-dask-wrapper and the dask-mini-assistant
+# a wrapper around oarcluster-mini.py to be used with seamless-dask-dynamic-wrapper and the dask-mini-assistant
 
 if [ -z "$PS1" ]; then
        interactive_flag=""

@@ -1,5 +1,5 @@
 #!/bin/bash
-# a wrapper around slurmcluster-micro.py to be used with seamless-dask-wrapper and the dask-micro-assistant
+# a wrapper around slurmcluster-micro.py to be used with seamless-dask-dynamic-wrapper and the dask-micro-assistant
 
 if [ -z "$PS1" ]; then
        interactive_flag=""

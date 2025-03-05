@@ -1,5 +1,5 @@
 #!/bin/bash
-# a wrapper around local.py to be used with seamless-dask-wrapper
+# a wrapper around local.py to be used with seamless-dask-dynamic-wrapper
 
 if [ -z "$PS1" ]; then
        interactive_flag=""
