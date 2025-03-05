@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# Sets up a wrapper around a Seamless+Dask deployment script
+#
+#   Syntax: seamless-dask-wrapper <deployment script> <config script>
+#   Example: seamless-dask-wrapper ./wrap-local.sh ./seamless-config.sh
+#
+# Requirements:
+#
+# - This script requires the Seamless hashserver and database to have been previously launched 
+#   by a script like run-db-hashserver-static.sh, and that its parameters are in the environment variables 
+#    read from the config script.
+#
+# - It requires a Dask+Seamless development conda environment to have been setup.
+#   You can build such an environment using ./build-environment.sh
+#   The name of the environment must be specified as SEAMLESS_DASK_CONDA_ENVIRONMENT.
+#
+set +u -e
+
+if [ -e "$TEMPDIR" ]; then
+  mkdir -p $TEMPDIR
+fi
+
+if [ -z "$CONDA_EXE" ] || [ -z "$CONDA_SHLVL" ]; then
+  echo 'conda must be installed' > /dev/stderr
+  exit 1
+fi
+
+CONDA_DIR=$(python3 -c '
+import os, pathlib
+conda_shlvl = int(os.environ["CONDA_SHLVL"])
+if conda_shlvl == 0:
+    CONDA_DIR = str(pathlib.Path(os.environ["CONDA_EXE"]).parent.parent)
+elif conda_shlvl == 1:
+    CONDA_DIR = os.environ["CONDA_PREFIX"]
+else:
+    CONDA_DIR = os.environ["CONDA_PREFIX_1"]
+print(CONDA_DIR)
+')
+
+source $CONDA_DIR/etc/profile.d/conda.sh
+
+for i in $(seq ${CONDA_SHLVL}); do
+    conda deactivate
+done
+conda activate
+
+dip=$SEAMLESS_DATABASE_IP
+
+DEPLOYMENT_SCRIPT=$1
+CONFIG_SCRIPT=$2
+
+export SEAMLESS_ASSISTANT_HOST=0.0.0.0  # listen on all IP addresses
+
+source $CONFIG_SCRIPT
+conda activate $SEAMLESS_DASK_CONDA_ENVIRONMENT
+source $CONFIG_SCRIPT
+
+ip=$(hostname -I | awk '{print $1}')
+
+x=$DASK_SCHEDULER_PORT
+
+bash $DEPLOYMENT_SCRIPT
