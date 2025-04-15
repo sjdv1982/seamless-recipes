@@ -10,7 +10,7 @@ For slurmcluster.py, dask-jobqueue must have been installed
 
 Worker ports will be opened between RANDOM_PORT_START and RANDOM_PORT_END
 
-Resource requirements are currently hardcoded. For a new project, you are 
+Resource requirements are currently hardcoded. For a new project, you are
 recommended to clone and modify this script and wrap-slurmcluster.sh.
 See the documentation of the dask-jobqueue
 
@@ -76,6 +76,8 @@ print()
 ncores = 10
 
 dask.config.set({"distributed.worker.resources.ncores": ncores})
+dask.config.set({"distributed.scheduler.unknown-task-duration": "1m"})
+dask.config.set({"distributed.scheduler.target-duration": "10m"})
 cluster = SLURMCluster(
     # queue='regular',
     walltime="01:00:00",

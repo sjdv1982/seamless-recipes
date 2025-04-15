@@ -9,7 +9,7 @@ For slurmcluster.py, dask-jobqueue must have been installed
 
 Worker ports will be opened between RANDOM_PORT_START and RANDOM_PORT_END
 
-Resource requirements are currently hardcoded. For a new project, you are 
+Resource requirements are currently hardcoded. For a new project, you are
 recommended to clone and modify this script and wrap-oar-mini.sh.
 See the documentation of the dask-jobqueue
 
@@ -79,6 +79,7 @@ ncores = 8
 
 dask.config.set({"distributed.worker.resources.ncores": ncores})
 dask.config.set({"distributed.scheduler.unknown-task-duration": "1m"})
+dask.config.set({"distributed.scheduler.target-duration": "10m"})
 
 cluster = OARCluster(
     queue="default",
